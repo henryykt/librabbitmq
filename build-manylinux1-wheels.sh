@@ -15,6 +15,7 @@ done
 
 # use a temporary directory to avoid picking up old wheels
 WHEELHOUSE=/workspace/wheelhouse
+mkdir -p /workspace/wheelhouse
 TMP_WHEELHOUSE=$(mktemp -d -p "${WHEELHOUSE}")
 
 # Bundle external shared libraries into the wheels
