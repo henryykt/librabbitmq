@@ -1,12 +1,23 @@
-language: python
-dist: trusty
+notifications:
+  email: false
+
 sudo: required
 
+services:
+  - docker
+
 install:
-  - pip install -r requirements/test-ci.txt
+  - docker pull quay.io/pypa/manylinux1_x86_64
 
 script:
-  - make test
+  - sh manylinux1
+  - ls wheelhouse/
 
-services:
-  - rabbitmq
+deploy:
+  provider: releases
+  api_key: $GITHUB_API_KEY
+  file_glob: true
+  file: wheelhouse/*.whl
+  skip_cleanup: true
+  on:
+    tags: true
