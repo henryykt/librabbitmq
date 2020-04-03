@@ -13,9 +13,6 @@ script:
   - sh manylinux1
   - ls dist/
 
-before-deploy:
-  - rm -rf dist
-  - ln -nsf wheelhouse dist
 deploy:
   - provider: pypi
     user: __token__
