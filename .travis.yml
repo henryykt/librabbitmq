@@ -26,6 +26,7 @@ deploy:
     passowrd: $PYPI_API_KEY
     file_glob: true
     file: wheelhouse/*.whl
+    distributions: "sdist bdist_wheel"
     skip_cleanup: true
     on:
       tags: true
