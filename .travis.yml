@@ -13,6 +13,9 @@ script:
   - sh manylinux1
   - ls wheelhouse/
 
+before-deploy:
+  - rm -rf dist
+  - ln -nsf wheelhouse dist
 deploy:
   - provider: releases
     api_key: $GITHUB_API_KEY
@@ -24,9 +27,6 @@ deploy:
   - provider: pypi
     user: __token__
     passowrd: $PYPI_API_KEY
-    file_glob: true
-    file: wheelhouse/*.whl
     distributions: "sdist bdist_wheel"
     skip_cleanup: true
-    on:
-      tags: true
+    index: https://test.pypi.org/legacy/
