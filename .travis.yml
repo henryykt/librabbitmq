@@ -17,16 +17,11 @@ before-deploy:
   - rm -rf dist
   - ln -nsf wheelhouse dist
 deploy:
-  - provider: releases
-    api_key: $GITHUB_API_KEY
-    file_glob: true
-    file: wheelhouse/*.whl
-    skip_cleanup: true
-    on:
-      tags: true
   - provider: pypi
     user: __token__
     passowrd: $PYPI_API_KEY
     distributions: "sdist bdist_wheel"
     skip_cleanup: true
     index: https://test.pypi.org/legacy/
+    on:
+      tags: true
