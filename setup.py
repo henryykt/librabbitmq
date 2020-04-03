@@ -263,7 +263,7 @@ if 'test' in sys.argv and 'build' not in sys.argv:
     )
 
 setup(
-    name='librabbitmq',
+    name='librabbitmq-fork',
     version=version,
     url=homepage,
     author=author,

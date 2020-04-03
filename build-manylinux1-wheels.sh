@@ -34,7 +34,7 @@ for PYBIN in /opt/python/*/bin/; do
         "${PYBIN}"/pip install --force-reinstall "amqp==2.5.2"
     fi
 
-    "${PYBIN}"/pip install librabbitmq --no-index -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
+    "${PYBIN}"/pip install librabbitmq-fork --no-index -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
     "${PYBIN}"/python -c "import librabbitmq"
     #(cd $HOME; ${PYBIN}/nosetests pymanylinuxdemo)
     mv -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl ${WHEELHOUSE}

@@ -14,10 +14,18 @@ script:
   - ls wheelhouse/
 
 deploy:
-  provider: releases
-  api_key: $GITHUB_API_KEY
-  file_glob: true
-  file: wheelhouse/*.whl
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: releases
+    api_key: $GITHUB_API_KEY
+    file_glob: true
+    file: wheelhouse/*.whl
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: pypi
+    user: __token__
+    passowrd: $PYPI_API_KEY
+    file_glob: true
+    file: wheelhouse/*.whl
+    skip_cleanup: true
+    on:
+      tags: true
