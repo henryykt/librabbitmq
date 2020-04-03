@@ -11,7 +11,7 @@ install:
 
 script:
   - sh manylinux1
-  - ls wheelhouse/
+  - ls dist/
 
 deploy:
   - provider: releases
@@ -24,8 +24,6 @@ deploy:
   - provider: pypi
     user: __token__
     passowrd: $PYPI_API_KEY
-    file_glob: true
-    file: wheelhouse/*.whl
     distributions: "sdist bdist_wheel"
     skip_cleanup: true
     on:
