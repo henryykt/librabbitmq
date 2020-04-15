@@ -67,4 +67,6 @@ struct amqp_connection_state_t_ {
 
 amqp_pool_t *amqp_get_or_create_channel_pool(amqp_connection_state_t, amqp_channel_t);
 
+int amqp_simple_wait_frame_on_channel(amqp_connection_state_t, amqp_channel_t, amqp_frame_t *);
+
 #endif /* __PYRMQ_AMQSTATE_H__ */

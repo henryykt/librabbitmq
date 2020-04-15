@@ -2,7 +2,7 @@
  librabbitmq-fork - Python AMQP Client using the rabbitmq-c library.
 =====================================================================
 
-:Version: 2.0.1-dev5
+:Version: 2.0.1-dev6
 :Download: http://pypi.python.org/pypi/librabbitmq-fork/
 :Code: http://github.com/henryykt/librabbitmq/
 :Keywords: rabbitmq, amqp, messaging, librabbitmq, rabbitmq-c, python,

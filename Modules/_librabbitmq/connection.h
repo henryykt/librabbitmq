@@ -172,21 +172,6 @@ typedef struct {
     PyObject *weakreflist;
 } PyRabbitMQ_Connection;
 
-// Keep track of PyObject references with increased reference count.
-// Entries are stored in the channel pool.
-#define PYOBJECT_POOL_MAX 100
-typedef struct pyobject_pool_t_ {
-    int num_entries;
-    PyObject **entries;
-    amqp_pool_t *pool;
-    struct pyobject_pool_t_ *next;
-} pyobject_pool_t;
-
-int
-PyDict_to_basic_properties(PyObject *, amqp_basic_properties_t *,
-                           amqp_connection_state_t, amqp_pool_t *,
-                           pyobject_pool_t *);
-
 /* Connection method sigs */
 static PyRabbitMQ_Connection*
 PyRabbitMQ_ConnectionType_new(PyTypeObject *, PyObject *, PyObject *);
