@@ -70,7 +70,13 @@ _PYRMQ_INLINE void
 AMQArray_SetStringValue(amqp_array_t*, amqp_bytes_t);
 
 _PYRMQ_INLINE void
+AMQArray_SetBoolValue(amqp_array_t*, int);
+
+_PYRMQ_INLINE void
 AMQArray_SetIntValue(amqp_array_t *, int);
+
+_PYRMQ_INLINE void
+AMQTArray_SetDoubleValue(amqp_array_t *, double);
 
 _PYRMQ_INLINE int64_t RabbitMQ_now_usec(void);
 _PYRMQ_INLINE int RabbitMQ_wait_nb(int);
@@ -94,7 +100,8 @@ _PYRMQ_INLINE PyObject* PyObjectArray_AddEntry(pyobject_array_t *, PyObject *obj
 _PYRMQ_INLINE PyObject* PyObjectArray_Maybe_Unicode(PyObject *, pyobject_array_t *);
 
 
-static int PyDict_to_basic_properties(PyObject *,
+static int
+PyDict_to_basic_properties(PyObject *,
                            amqp_basic_properties_t *,
                            amqp_connection_state_t,
                            amqp_pool_t *,
@@ -202,7 +209,7 @@ AMQTable_SetIntValue(amqp_table_t *table,
 
 _PYRMQ_INLINE void
 AMQTable_SetLongValue(amqp_table_t *table,
-                     amqp_bytes_t key, long value)
+                     amqp_bytes_t key, int64_t value)
 {
     amqp_table_entry_t *entry = AMQTable_AddEntry(table, key);
     entry->value.kind = AMQP_FIELD_KIND_I64;
@@ -264,11 +271,35 @@ AMQArray_SetStringValue(amqp_array_t *array, amqp_bytes_t value)
 }
 
 _PYRMQ_INLINE void
+AMQArray_SetBoolValue(amqp_array_t *array, int value)
+{
+    amqp_field_value_t *entry = AMQArray_AddEntry(array);
+    entry->kind = AMQP_FIELD_KIND_BOOLEAN;
+    entry->value.boolean = value;
+}
+
+_PYRMQ_INLINE void
 AMQArray_SetIntValue(amqp_array_t *array, int value)
 {
     amqp_field_value_t *entry = AMQArray_AddEntry(array);
     entry->kind = AMQP_FIELD_KIND_I32;
     entry->value.i32 = value;
+}
+
+_PYRMQ_INLINE void
+AMQArray_SetLongValue(amqp_array_t *array, int64_t value)
+{
+    amqp_field_value_t *entry = AMQArray_AddEntry(array);
+    entry->kind = AMQP_FIELD_KIND_I64;
+    entry->value.i64 = value;
+}
+
+_PYRMQ_INLINE void
+AMQArray_SetDoubleValue(amqp_array_t *array, double value)
+{
+    amqp_field_value_t *entry = AMQArray_AddEntry(array);
+    entry->kind = AMQP_FIELD_KIND_F64;
+    entry->value.f64 = value;
 }
 
 static amqp_table_t
@@ -278,8 +309,7 @@ PyDict_ToAMQTable(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
     PyObject *dvalue = NULL;
     Py_ssize_t size = 0;
     Py_ssize_t pos = 0;
-    uint64_t clong_value = 0;
-    int64_t long_value = 0;
+    int64_t clong_value = 0;
     double cdouble_value = 0.0;
     int is_unicode = 0;
     amqp_table_t dst = amqp_empty_table;
@@ -321,28 +351,27 @@ PyDict_ToAMQTable(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
         }
         else if (PyLong_Check(dvalue) || PyInt_Check(dvalue)) {
             /* Int | Long */
-            PyErr_Clear();
-            long_value = (int64_t)PyLong_AsLong(dvalue);
+            clong_value = (int64_t)PyLong_AsLong(dvalue);
 
             if (PyErr_Occurred())
               goto error;
 
-            if (long_value < INT32_MAX) {
+            if (labs(clong_value) < INT32_MAX) {
                 AMQTable_SetIntValue(&dst,
                         PyString_AS_AMQBYTES(dkey),
-                        long_value
+                        clong_value
                 );
             } else {
                 AMQTable_SetLongValue(&dst,
                         PyString_AS_AMQBYTES(dkey),
-                        long_value
+                        clong_value
                 );
             }
         }
         else if (PyFloat_Check(dvalue)) {
             cdouble_value = PyFloat_AsDouble(dvalue);
 
-            if (cdouble_value == -1)
+            if (cdouble_value == -1 && PyErr_Occurred())
               goto error;
 
             AMQTable_SetDoubleValue(&dst,
@@ -383,7 +412,8 @@ static amqp_array_t
 PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool, pyobject_array_t *pyobj_array)
 {
     Py_ssize_t pos = 0;
-    uint64_t clong_value = 0;
+    int64_t clong_value = 0;
+    double cdouble_value = 0.0;
     int is_unicode = 0;
     amqp_array_t dst = amqp_empty_array;
 
@@ -414,24 +444,50 @@ PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
             AMQArray_SetArrayValue(
                 &dst, PyIter_ToAMQArray(conn, item, pool, pyobj_array));
         }
+        else if (PyBool_Check(item)) {
+          /* Bool */
+          clong_value = 0;  /* default false */
+
+          if (item == Py_True)
+            clong_value = 1;
+
+          AMQArray_SetBoolValue(&dst, clong_value);
+        }
         else if (PyLong_Check(item) || PyInt_Check(item)) {
             /* Int | Long */
-            clong_value = (int64_t)PyLong_AsLongLong(item);
-            AMQArray_SetIntValue(&dst, clong_value);
+            clong_value = (int64_t)PyLong_AsLong(item);
+
+            if (PyErr_Occurred())
+              goto item_error;
+
+            if (labs(clong_value) < INT32_MAX) {
+                AMQArray_SetIntValue(&dst, clong_value);
+            } else {
+                AMQArray_SetLongValue(&dst, clong_value);
+            }
+        }
+        else if (PyFloat_Check(item)) {
+            cdouble_value = PyFloat_AsDouble(item);
+
+            if (cdouble_value == -1 && PyErr_Occurred())
+              goto item_error;
+
+            AMQArray_SetDoubleValue(&dst, cdouble_value);
         }
         else {
             /* String | Unicode */
             is_unicode = PyUnicode_Check(item);
             if (is_unicode || PyBytes_Check(item)) {
                 if (is_unicode) {
-                    /* PyUnicode_AsASCIIString returns a new ref! */
-                    item_tmp = item;
-                    if ((item = PyUnicode_AsASCIIString(item)) == NULL)
+                    /* PyUnicode_AsEncodedString returns a new ref! */
+                    if ((item_tmp = PyUnicode_AsEncodedString(item, "utf-8", "strict")) == NULL)
                         goto item_error;
-                    Py_XDECREF(item_tmp);
+
+                    PyObjectArray_AddEntry(pyobj_array, item_tmp);
+                    AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item_tmp));
+                } else {
+                    AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item));
                 }
-                AMQArray_SetStringValue(
-                    &dst, PyString_AS_AMQBYTES(item));
             }
             else {
                 /* unsupported type */
@@ -454,9 +510,7 @@ PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
 
     return dst;
 item_error:
-    Py_XDECREF(item_tmp);
     Py_XDECREF(item);
-
     Py_XDECREF(iterator);
     assert(PyErr_Occurred());
     return dst;
@@ -725,7 +779,8 @@ AMQArray_toPyList(amqp_array_t *array)
     return list;
 }
 
-static int PyDict_to_basic_properties(PyObject *p,
+static int
+PyDict_to_basic_properties(PyObject *p,
                            amqp_basic_properties_t *props,
                            amqp_connection_state_t conn,
                            amqp_pool_t *pool,
@@ -994,14 +1049,32 @@ PyRabbitMQ_revive_channel(PyRabbitMQ_Connection *self, unsigned int channel)
 {
     int status = -1;
     amqp_channel_close_ok_t req;
+    unsigned int rc = 1;
+    PyObject *type, *value, *traceback;
+
+    // save exception
+    PyErr_Fetch(&type, &value, &traceback);
+
     status = amqp_send_method(self->conn, (amqp_channel_t)channel,
                             AMQP_CHANNEL_CLOSE_OK_METHOD, &req);
     if (status < 0) {
         PyErr_SetString(PyRabbitMQExc_ConnectionError, "Couldn't revive channel");
         PyRabbitMQ_Connection_close(self);
-        return 1;
+
+        goto finally;
     }
-    return PyRabbitMQ_Connection_create_channel(self, channel);
+
+    rc = PyRabbitMQ_Connection_create_channel(self, channel);
+
+    goto finally;
+
+finally:
+    if (PyErr_Occurred()) {
+        PyErr_Print();
+    }
+
+    PyErr_Restore(type, value, traceback);
+    return rc;
 }
 
 /* ------: Connection :--------------------------------------------------- */
@@ -1516,11 +1589,16 @@ PyRabbitMQ_recv(PyRabbitMQ_Connection *self, PyObject *p,
                 }
                 else {
                     if (p) {
-                        payload = PySTRING_FROM_AMQBYTES(
-                                    frame.payload.body_fragment);
+                        payload = PyBytes_FromStringAndSize(
+                                    bufp,
+                                    (Py_ssize_t)frame.payload.body_fragment.len);
                     } else {
-                        view = buffer_toMemoryView(bufp, (Py_ssize_t)frame.payload.body_fragment.len);
+                        payload = PyBytes_FromStringAndSize(
+                                    bufp,
+                                    (Py_ssize_t)frame.payload.body_fragment.len);
+                        view = PyMemoryView_FromObject(payload);
                     }
+
                     break;
                 }
             }

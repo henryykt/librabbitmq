@@ -19,7 +19,7 @@ ConnectionError = _librabbitmq.ConnectionError
 ChannelError = _librabbitmq.ChannelError
 
 
-__version__ = '2.0.1.dev6'
+__version__ = '2.0.1.dev7'
 __all__ = ['Connection', 'Message', 'ConnectionError', 'ChannelError']
 
 
@@ -117,6 +117,10 @@ class Channel(object):
             body, properties = body
         elif isinstance(body, self.Message):
             body, properties = body.body, body.properties
+
+        if isinstance(body, memoryview):
+            body = body.tobytes()
+
         return self.connection._basic_publish(
             self.channel_id, body, exchange, routing_key, properties,
             mandatory or False, immediate or False,

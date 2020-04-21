@@ -54,20 +54,6 @@
 #endif
 
 
-_PYRMQ_INLINE PyObject*
-buffer_toMemoryView(char *buf, Py_ssize_t buf_len) {
-        PyObject *view;
-#if PY_MAJOR_VERSION == 2
-        PyObject *pybuffer;
-        pybuffer = PyBuffer_FromMemory(buf, buf_len);
-        view = PyMemoryView_FromObject(pybuffer);
-        Py_XDECREF(pybuffer);
-#else
-        view = PyMemoryView_FromMemory(buf, buf_len, PyBUF_READ);
-#endif
-        return view;
-}
-
 #define PyDICT_SETNONE_DECREF(dict, key)                            \
     do {                                                            \
         PyDict_SetItem(dict, key, Py_None);                         \
@@ -104,8 +90,6 @@ buffer_toMemoryView(char *buf, Py_ssize_t buf_len) {
             PySTRING_FROM_AMQBYTES(table->headers.entries[i].key),  \
             stmt);                                                  \
 
-_PYRMQ_INLINE PyObject* Maybe_Unicode(PyObject *);
-
 #if defined(__C99__) || defined(__GNUC__)
 #  define PyString_AS_AMQBYTES(s)                                   \
       (amqp_bytes_t){Py_SIZE(s), (void *)PyBytes_AS_STRING(s)}
@@ -121,14 +105,6 @@ PyString_AS_AMQBYTES(PyObject *s)
     return ret;
 }
 #endif
-
-_PYRMQ_INLINE PyObject*
-Maybe_Unicode(PyObject *s)
-{
-    if (PyUnicode_Check(s))
-        return PyUnicode_AsASCIIString(s);
-    return s;
-}
 
 #define PYRMQ_IS_TIMEOUT(t)   (t > 0.0)
 #define PYRMQ_IS_NONBLOCK(t)  (t == -1)
