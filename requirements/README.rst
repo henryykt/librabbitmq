@@ -8,7 +8,7 @@ Index
 
 * :file:`requirements/default.txt`
 
-    Default requirements for Python 2.7+.
+    Default requirements for Python 3.6+.
 
 * :file:`requirements/test.txt`
 

@@ -7,10 +7,10 @@ services:
   - docker
 
 install:
-  - docker pull quay.io/pypa/manylinux1_x86_64
+  - docker pull quay.io/pypa/manylinux2014_x86_64
 
 script:
-  - sh manylinux1
+  - sh manylinux2014
   - ls dist/
 
 deploy:

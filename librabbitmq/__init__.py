@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import sys
 import itertools
-from six.moves import xrange
 
 import _librabbitmq
 
@@ -205,7 +204,7 @@ class Connection(_librabbitmq.Connection):
             client_properties=client_properties,
         )
         self.channels = {}
-        self._avail_channel_ids = array('H', xrange(self.channel_max, 0, -1))
+        self._avail_channel_ids = array('H', range(self.channel_max, 0, -1))
         if not lazy:
             self.connect()
 

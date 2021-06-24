@@ -1,8 +1,6 @@
 # coding: utf-8
 from __future__ import absolute_import
 
-from six.moves import xrange
-
 import socket
 import unittest
 
@@ -83,7 +81,7 @@ class test_Channel(unittest.TestCase):
             properties=dict(content_type='application/json',
                             content_encoding='utf-8'))
 
-        for i in xrange(100):
+        for i in range(100):
             self.channel.basic_publish(message, TEST_QUEUE, TEST_QUEUE)
 
         messages = []
@@ -93,7 +91,7 @@ class test_Channel(unittest.TestCase):
             x.ack()
 
         self.channel.basic_consume(TEST_QUEUE, callback=cb)
-        for i in xrange(100):
+        for i in range(100):
             self.connection.drain_events(timeout=0.2)
 
         self.assertEqual(len(messages), 100)
@@ -252,7 +250,7 @@ class test_Channel(unittest.TestCase):
             x.ack()
 
         self.channel.basic_consume(TEST_QUEUE, callback=cb)
-        for i in xrange(2):
+        for i in range(2):
             self.connection.drain_events(timeout=0.2)
 
         self.assertEqual(len(messages), 4)

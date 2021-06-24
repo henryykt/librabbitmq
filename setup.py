@@ -277,7 +277,6 @@ setup(
     cmdclass=cmdclass,
     install_requires=[
         'amqp>=1.4.6',
-        'six>=1.0.0',
     ],
     ext_modules=ext_modules,
     classifiers=[
@@ -285,10 +284,10 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: C',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Mozilla Public License 1.0 (MPL)',
