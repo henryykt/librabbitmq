@@ -2,14 +2,16 @@
  librabbitmq - Python AMQP Client using the rabbitmq-c library.
 ================================================================
 
-:Version: 2.0.0
-:Download: http://pypi.python.org/pypi/librabbitmq/
-:Code: http://github.com/celery/librabbitmq/
+:Version: 2.0.2.dev2
+:Download: http://pypi.python.org/pypi/librabbitmq-fork/
+:Code: http://github.com/henryytk/librabbitmq/
 :Keywords: rabbitmq, amqp, messaging, librabbitmq, rabbitmq-c, python,
            kombu, celery
 
 .. contents::
     :local:
+
+Note: This is a (temporary) fork of librabbitmq.
 
 Python bindings to the RabbitMQ C-library `rabbitmq-c`_.
 Supported by Kombu and Celery.
@@ -21,11 +23,11 @@ Installation
 
 Install via pip::
 
-    $ pip install librabbitmq
+    $ pip install librabbitmq-fork
 
 or, install via easy_install::
 
-    $ easy_install librabbitmq
+    $ easy_install librabbitmq-fork
 
 Downloading and installing from source
 --------------------------------------
