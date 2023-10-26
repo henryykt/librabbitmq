@@ -54,3 +54,5 @@ tools/.*\.[17]$
 tools/doc/man-date.ent
 
 clib/
+
+wheelhouse/
