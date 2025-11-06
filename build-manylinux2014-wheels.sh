@@ -5,8 +5,16 @@ set -e -x
 # Install system packages required by our library
 yum install -y cmake openssl-devel gcc automake
 
+# Raise cmake_minimum_required to allow build to work in the latest
+# manylinux2014 image
+(cd /workspace && make submodules)
+sed -i 's/cmake_minimum_required(VERSION 2.6)/cmake_minimum_required(VERSION 3.6)/g' \
+  /workspace/rabbitmq-c/CMakeLists.txt
+
 # Compile wheels
 for PYBIN in /opt/python/cp*/bin; do
+    # latest manylinux2014 image does not have setuptools and wheel installed
+    (cd /workspace && "${PYBIN}"/pip install setuptools wheel)
     # Ensure a fresh build of rabbitmq-c.
     (cd /workspace && PATH="${PYBIN}:${PATH}" make clean)
     (cd /workspace && "${PYBIN}"/python setup.py install)
@@ -27,7 +35,7 @@ done
 for PYBIN in /opt/python/cp*/bin/; do
     PYVER=$(echo "${PYBIN}" | cut -d'/' -f 4)
 
-    "${PYBIN}"/pip install librabbitmq-fork --no-index -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
+    "${PYBIN}"/pip install librabbitmq-fork -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
     "${PYBIN}"/python -c "import librabbitmq"
     #(cd $HOME; ${PYBIN}/nosetests pymanylinuxdemo)
     mv -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl ${WHEELHOUSE}
