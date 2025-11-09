@@ -9,6 +9,8 @@ BASE_PATH = os.path.dirname(__file__)
 
 LRMQDIST = lambda *x: os.path.join(BASE_PATH, 'rabbitmq-c', *x)
 LRMQSRC = lambda *x: LRMQDIST('librabbitmq', *x)
+LRMQINC = lambda *x: LRMQDIST('include', *x)
+LRMQINC2 = lambda *x: LRMQDIST('build/include', *x)
 PYCP = lambda *x: os.path.join(BASE_PATH, 'Modules', '_librabbitmq', *x)
 
 
@@ -51,6 +53,8 @@ def create_builder():
     sys.argv[1:] = unprocessed
 
     incdirs.append(LRMQSRC())
+    incdirs.append(LRMQINC())
+    incdirs.append(LRMQINC2())
     if find_cmake() != "":
         incdirs.append(LRMQDIST('build', 'librabbitmq'))
 
@@ -63,7 +67,6 @@ def create_builder():
         'amqp_connection.c',
         'amqp_consumer.c',
         'amqp_framing.c',
-        'amqp_hostcheck.c',
         'amqp_mem.c',
         'amqp_socket.c',
         'amqp_table.c',
@@ -156,7 +159,13 @@ def create_builder():
 
                         os.chdir('build')
                         if not os.path.isfile('Makefile'):
-                            if os.system(cmake + ' ..'):
+                            if os.system(
+                                cmake + ' ..' +
+                                ' -DOPENSSL_ROOT_DIR=/usr/lib64/openssl11' +
+                                ' -DOPENSSL_INCLUDE_DIR=/usr/include/openssl11' +
+                                ' -DOPENSSL_CRYPTO_LIBRARY=/usr/lib64/openssl11/libcrypto.so' +
+                                ' -DOPENSSL_SSL_LIBRARY=/usr/lib64/openssl11/libssl.so'
+                            ):
                                 return
 
                         if os.system(make + ' rabbitmq rabbitmq-static'):
@@ -280,12 +289,13 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: C',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
         'Programming Language :: Python :: Implementation :: CPython',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Mozilla Public License 1.0 (MPL)',

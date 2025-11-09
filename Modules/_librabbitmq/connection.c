@@ -5,8 +5,8 @@
 
 #include <sys/time.h>
 
-#include <amqp.h>
-#include <amqp_tcp_socket.h>
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/tcp_socket.h>
 #include <amqp_socket.h>
 
 #include "connection.h"
@@ -480,14 +480,12 @@ PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
             if (is_unicode || PyBytes_Check(item)) {
                 if (is_unicode) {
                     /* PyUnicode_AsEncodedString returns a new ref! */
-                    if ((item_tmp = PyUnicode_AsEncodedString(item, "utf-8", "strict")) == NULL)
+                    item_tmp = item;
+                    if ((item = PyUnicode_AsEncodedString(item, "utf-8", "strict")) == NULL)
                         goto item_error;
-
-                    PyObjectArray_AddEntry(pyobj_array, item_tmp);
-                    AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item_tmp));
-                } else {
-                    AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item));
+                    Py_XDECREF(item_tmp);
                 }
+                AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item));
             }
             else {
                 /* unsupported type */
@@ -502,6 +500,7 @@ PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
 
     return dst;
 item_error:
+    Py_XDECREF(item_tmp);
     Py_XDECREF(item);
     Py_XDECREF(iterator);
     assert(PyErr_Occurred());

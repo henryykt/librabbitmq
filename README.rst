@@ -2,7 +2,7 @@
  librabbitmq - Python AMQP Client using the rabbitmq-c library.
 ================================================================
 
-:Version: 2.0.2.dev2
+:Version: 2.0.3.dev1
 :Download: http://pypi.python.org/pypi/librabbitmq-fork/
 :Code: http://github.com/henryytk/librabbitmq/
 :Keywords: rabbitmq, amqp, messaging, librabbitmq, rabbitmq-c, python,
@@ -10,7 +10,7 @@
 
 .. |deepwiki| image:: https://devin.ai/assets/deepwiki-badge.png
     :alt: Ask http://DeepWiki.com
-    :target: https://deepwiki.com/celery/librabbitmq
+    :target: https://deepwiki.com/henryykt/librabbitmq
     :width: 125px
 
 .. contents::

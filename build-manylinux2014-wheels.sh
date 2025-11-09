@@ -3,10 +3,12 @@
 set -e -x
 
 # Install system packages required by our library
-yum install -y cmake openssl-devel gcc automake
+yum install -y cmake openssl11-devel gcc automake
 
 # Compile wheels
 for PYBIN in /opt/python/cp*/bin; do
+    # latest manylinux2014 image does not have setuptools and wheel installed
+    (cd /workspace && "${PYBIN}"/pip install setuptools wheel)
     # Ensure a fresh build of rabbitmq-c.
     (cd /workspace && PATH="${PYBIN}:${PATH}" make clean)
     (cd /workspace && "${PYBIN}"/python setup.py install)
@@ -14,7 +16,8 @@ for PYBIN in /opt/python/cp*/bin; do
 done
 
 # use a temporary directory to avoid picking up old wheels
-WHEELHOUSE=/workspace/wheelhouse
+WHEELHOUSE=/workspace/dist
+mkdir -p /workspace/dist
 TMP_WHEELHOUSE=$(mktemp -d -p "${WHEELHOUSE}")
 
 # Bundle external shared libraries into the wheels
@@ -26,14 +29,7 @@ done
 for PYBIN in /opt/python/cp*/bin/; do
     PYVER=$(echo "${PYBIN}" | cut -d'/' -f 4)
 
-    # amqp 5.0.0a1 and vine 5.0.0a1 breaks python2
-    # https://github.com/celery/vine/issues/34
-    if [[ "${PYVER}" == *"cp2"* ]]; then
-        "${PYBIN}"/pip install --force-reinstall "vine==1.3.0"
-        "${PYBIN}"/pip install --force-reinstall "amqp==2.5.2"
-    fi
-
-    "${PYBIN}"/pip install librabbitmq --no-index -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
+    "${PYBIN}"/pip install librabbitmq-fork -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl
     "${PYBIN}"/python -c "import librabbitmq"
     #(cd $HOME; ${PYBIN}/nosetests pymanylinuxdemo)
     mv -f "${TMP_WHEELHOUSE}"/*-"${PYVER}"-*.whl ${WHEELHOUSE}

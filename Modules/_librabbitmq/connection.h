@@ -5,8 +5,8 @@
 #include <Python.h>
 #include <structmember.h>
 
-#include <amqp.h>
-#include <amqp_framing.h>
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/framing.h>
 
 #if PY_MAJOR_VERSION == 2
 # define TP_FLAGS (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS)

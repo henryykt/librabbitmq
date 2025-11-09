@@ -8,7 +8,7 @@ PYTHON=python
 all: build manylinux2014
 
 add-submodules:
-	-git submodule add -b v0.8.0 https://github.com/alanxz/rabbitmq-c.git
+	-git submodule add -b v0.15.0 https://github.com/alanxz/rabbitmq-c.git
 
 submodules:
 	git submodule init
