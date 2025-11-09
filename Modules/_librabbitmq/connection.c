@@ -485,7 +485,8 @@ PyIter_ToAMQArray(amqp_connection_state_t conn, PyObject *src, amqp_pool_t *pool
                         goto item_error;
                     Py_XDECREF(item_tmp);
                 }
-                AMQArray_SetStringValue(&dst, PyString_AS_AMQBYTES(item));
+                AMQArray_SetStringValue(
+                    &dst, PyString_AS_AMQBYTES(item));
             }
             else {
                 /* unsupported type */
@@ -1170,7 +1171,7 @@ PyRabbitMQ_ConnectionType_init(PyRabbitMQ_Connection *self,
 
     if (self->hostname == NULL || self->userid == NULL || self->password == NULL || self->virtual_host == NULL) {
         PyErr_NoMemory();
-        return 0; // Is this correct?
+        return 0;
     }
 
     strcpy(self->hostname, hostname);
@@ -1587,17 +1588,12 @@ PyRabbitMQ_recv(PyRabbitMQ_Connection *self, PyObject *p,
                     view = PyMemoryView_FromObject(payload);
                 }
                 else {
+                    payload = PyBytes_FromStringAndSize(
+                                bufp,
+                                (Py_ssize_t)frame.payload.body_fragment.len);
                     if (p) {
-                        payload = PyBytes_FromStringAndSize(
-                                    bufp,
-                                    (Py_ssize_t)frame.payload.body_fragment.len);
-                    } else {
-                        payload = PyBytes_FromStringAndSize(
-                                    bufp,
-                                    (Py_ssize_t)frame.payload.body_fragment.len);
                         view = PyMemoryView_FromObject(payload);
                     }
-
                     break;
                 }
             }
